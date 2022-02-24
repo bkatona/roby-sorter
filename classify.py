@@ -8,10 +8,15 @@ import sys, getopt
 import signal
 import time
 from edge_impulse_linux.image import ImageImpulseRunner
+from gpiozero import Button, Servo
+
+button = Button(2)
+servoL = Servo(17)
+servoR = Servo(18)
 
 runner = None
 # if you don't want to see a camera preview, set this to False
-show_camera = True
+show_camera = False
 if (sys.platform == 'linux' and not os.environ.get('DISPLAY')):
     show_camera = False
 
@@ -94,33 +99,54 @@ def main(argv):
             else:
                 raise Exception("Couldn't initialize selected camera.")
 
-            next_frame = 0 # limit to ~10 fps here
-
+            
             for res, img in runner.classifier(videoCaptureDeviceId):
-                if (next_frame > now()):
-                    time.sleep((next_frame - now()) / 1000)
+                servoR.mid()
+                sleep(2)
+                servoL.mid()
+                sleep(2)
+                button.wait_for_press()
 
                 # print('classification runner response', res)
 
                 if "classification" in res["result"].keys():
                     print('Result (%d ms.) ' % (res['timing']['dsp'] + res['timing']['classification']), end='')
+                    highScore = 0
+                    winner = ''
                     for label in labels:
                         score = res['result']['classification'][label]
+                        if score > highScore:
+                            score = highScore
+                            winner = label
                         print('%s: %.2f\t' % (label, score), end='')
-                    print('', flush=True)
-
-                elif "bounding_boxes" in res["result"].keys():
-                    print('Found %d bounding boxes (%d ms.)' % (len(res["result"]["bounding_boxes"]), res['timing']['dsp'] + res['timing']['classification']))
-                    for bb in res["result"]["bounding_boxes"]:
-                        print('\t%s (%.2f): x=%d y=%d w=%d h=%d' % (bb['label'], bb['value'], bb['x'], bb['y'], bb['width'], bb['height']))
-                        img = cv2.rectangle(img, (bb['x'], bb['y']), (bb['x'] + bb['width'], bb['y'] + bb['height']), (255, 0, 0), 1)
+                        print('', flush=True)
+        
+                    if highScore > 55:
+                        if winner == 'glass':
+                            servoR.min()
+        
+                        else if winner == 'paper':
+                            servoR.max()
+        
+                        else if winner == 'plastic':
+                            servoL.min()
+        
+                        else if winner == 'garbage':
+                            servoL.max()
+        
+                        else:
+                            servoL.max()
+        
+                    else:
+                        servoL.max()
+                        
 
                 if (show_camera):
                     cv2.imshow('edgeimpulse', cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
                     if cv2.waitKey(1) == ord('q'):
                         break
 
-                next_frame = now() + 1000
+                
         finally:
             if (runner):
                 runner.stop()
