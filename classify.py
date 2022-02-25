@@ -106,6 +106,7 @@ def main(argv):
                 servoL.mid()
                 sleep(2)
                 button.wait_for_press()
+                print("Button pushed")
 
                 # print('classification runner response', res)
 
@@ -124,14 +125,17 @@ def main(argv):
                     if highScore > 55:
                         if winner == 'glass':
                             servoR.min()
+                            print("Glass")
         
                         else if winner == 'paper':
                             servoR.max()
+                            print("Paper")
         
                         else if winner == 'plastic':
                             servoL.min()
+                            print("Plastic")
         
-                        else if winner == 'garbage':
+                        else if winner == 'trash':
                             servoL.max()
         
                         else:
