@@ -102,9 +102,9 @@ def main(argv):
             
             for res, img in runner.classifier(videoCaptureDeviceId):
                 servoR.mid()
-                sleep(2)
+                time.sleep(2)
                 servoL.mid()
-                sleep(2)
+                time.sleep(2)
                 button.wait_for_press()
                 print("Button pushed")
 
@@ -127,15 +127,15 @@ def main(argv):
                             servoR.min()
                             print("Glass")
         
-                        else if winner == 'paper':
+                        elif winner == 'paper':
                             servoR.max()
                             print("Paper")
         
-                        else if winner == 'plastic':
+                        elif winner == 'plastic':
                             servoL.min()
                             print("Plastic")
         
-                        else if winner == 'trash':
+                        elif winner == 'trash':
                             servoL.max()
         
                         else:
