@@ -9,7 +9,7 @@ import numpy as np
 import signal
 from edge_impulse_linux.image import ImageImpulseRunner
 from gpiozero import Button, Servo
-
+button = Button(2)
 runner = None
 
 show_camera = False
@@ -58,7 +58,7 @@ def main(argv):
             help()
             sys.exit()
 
-    if len(args) != 2:
+    if len(args) != 1:
         help()
         sys.exit(2)
 
@@ -92,14 +92,14 @@ def main(argv):
                 w = camera.get(3)
                 h = camera.get(4)
                 print("Camera %s (%s x %s) in port %s selected." %(backendName,h,w, videoCaptureDeviceId))
-                camera.release()
+               # camera.release()
             else:
                 raise Exception("Couldn't initialize selected camera.")
             
             while True:
                 button.wait_for_press()
-                ret, img = capture.read()
- 
+                print("Button Pushed")
+                ret, img = camera.read() 
 
                 # imread returns images in BGR format, so we need to convert to RGB
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
