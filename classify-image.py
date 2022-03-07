@@ -9,7 +9,10 @@ import numpy as np
 import signal
 from edge_impulse_linux.image import ImageImpulseRunner
 from gpiozero import Button, Servo
+from time import sleep
 button = Button(2)
+servo1 = Servo(17)
+servo2 = Servo(18)
 runner = None
 
 show_camera = False
@@ -97,6 +100,8 @@ def main(argv):
                 raise Exception("Couldn't initialize selected camera.")
             
             while True:
+                servo1.mid()
+                sleep(2)
                 button.wait_for_press()
                 print("Button Pushed")
                 ret, img = camera.read() 
@@ -115,11 +120,28 @@ def main(argv):
 
                 if "classification" in res["result"].keys():
                     print('Result (%d ms.) ' % (res['timing']['dsp'] + res['timing']['classification']), end='')
+                    high_score = 0
                     for label in labels:
                         score = res['result']['classification'][label]
                         print('%s: %.2f\t' % (label, score), end='')
+                        if score > high_score:
+                           high_score = score
+                           winner = label
+                           
                     print('', flush=True)
-
+                    print(winner)
+                    if winner == "paper":
+                        servo1.min()
+                        sleep(2)
+                    elif winner == "plastic":
+                        servo1.max()
+                        sleep(2)
+                    elif winner == "metal":
+                        servo2.min()
+                        sleep(2)
+                    elif winner == "trash":
+                        servo2.max()
+                        sleep(2)
                 elif "bounding_boxes" in res["result"].keys():
                     print('Found %d bounding boxes (%d ms.)' % (len(res["result"]["bounding_boxes"]), res['timing']['dsp'] + res['timing']['classification']))
                     for bb in res["result"]["bounding_boxes"]:
