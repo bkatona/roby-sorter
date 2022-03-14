@@ -118,7 +118,7 @@ def main(argv):
                 # the image will be resized and cropped, save a copy of the picture here
                 # so you can see what's being passed into the classifier
                 if show_camera == True:
-                    cv2.imwrite('debug.jpg', cv2.cvtColor(cropped, cv2.COLOR_RGB2BGR))
+                    cv2.imwrite('debug.jpg', cropped)
 
                 res = runner.classify(features)
 
