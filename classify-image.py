@@ -10,12 +10,14 @@ import signal
 from edge_impulse_linux.image import ImageImpulseRunner
 from gpiozero import Button, Servo
 from time import sleep
+
 button = Button(2)
 servo1 = Servo(17)
 servo2 = Servo(18)
 runner = None
 
 show_camera = False
+
 if (sys.platform == 'linux' and not os.environ.get('DISPLAY')):
     show_camera = False
 
@@ -95,26 +97,30 @@ def main(argv):
                 w = camera.get(3)
                 h = camera.get(4)
                 print("Camera %s (%s x %s) in port %s selected." %(backendName,h,w, videoCaptureDeviceId))
-               # camera.release()
+               
             else:
                 raise Exception("Couldn't initialize selected camera.")
             
             while True:
                 servo1.mid()
                 sleep(2)
+                servo2.mid()
+                sleep(2)
+                
                 button.wait_for_press()
                 print("Button Pushed")
                 ret, img = camera.read() 
 
                 # imread returns images in BGR format, so we need to convert to RGB
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
                 # get_features_from_image also takes a crop direction arguments in case you don't have square images
                 features, cropped = runner.get_features_from_image(img)
 
                 # the image will be resized and cropped, save a copy of the picture here
                 # so you can see what's being passed into the classifier
-                #cv2.imwrite('debug.jpg', cv2.cvtColor(cropped, cv2.COLOR_RGB2BGR))
+                if show_camera == True:
+                    cv2.imwrite('debug.jpg', cv2.cvtColor(cropped, cv2.COLOR_RGB2BGR))
 
                 res = runner.classify(features)
 
@@ -143,9 +149,7 @@ def main(argv):
                         servo2.max()
                         sleep(2)
                 elif "bounding_boxes" in res["result"].keys():
-                    print('Found %d bounding boxes (%d ms.)' % (len(res["result"]["bounding_boxes"]), res['timing']['dsp'] + res['timing']['classification']))
-                    for bb in res["result"]["bounding_boxes"]:
-                        print('\t%s (%.2f): x=%d y=%d w=%d h=%d' % (bb['label'], bb['value'], bb['x'], bb['y'], bb['width'], bb['height']))
+                    print('The model you are using is producing bounding boxes. However, bounding boxes not supported')
         finally:
             if (runner):
                 runner.stop()
