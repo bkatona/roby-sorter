@@ -6,11 +6,14 @@ import sys, getopt
 import numpy as np
 import signal
 from edge_impulse_linux.image import ImageImpulseRunner
-from gpiozero import Button, Servo
+from gpiozero import Button, Servo, Device
+from gpiozero.pins.pigpio import PiGPIOFactory
 from time import sleep
 
+Device.pin_factory = PiGPIOFactory()
+
 button = Button(2)
-servo1 = Servo(17)
+servo1 = Servo(17, )
 servo2 = Servo(18)
 runner = None
 
@@ -108,9 +111,6 @@ def main(argv):
                 button.wait_for_press()
                 print("Button Pushed")
                 ret, img = camera.read() 
-
-                # imread returns images in BGR format, so we need to convert to RGB
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
                 # get_features_from_image also takes a crop direction arguments in case you don't have square images
                 features, cropped = runner.get_features_from_image(img)
