@@ -7,12 +7,13 @@ import numpy as np
 import signal
 from edge_impulse_linux.image import ImageImpulseRunner
 from gpiozero import Button, Servo, Device
+from subprocess import check_call
 from gpiozero.pins.pigpio import PiGPIOFactory
 from time import sleep
 
 Device.pin_factory = PiGPIOFactory()
 
-button = Button(2)
+button = Button(2, hold_time = 6)
 servo1 = Servo(17, )
 servo2 = Servo(18)
 runner = None
@@ -51,6 +52,11 @@ signal.signal(signal.SIGINT, sigint_handler)
 
 def help():
     print('python classify-image.py <path_to_model.eim> <path_to_image.jpg>')
+
+def shutdown():
+    check_call(['sudo', 'poweroff'])
+
+button.when_held = shutdown
 
 def main(argv):
     try:
